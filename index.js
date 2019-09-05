@@ -43,12 +43,14 @@ function createComponent(name) {
     const templateFileName = name.toLowerCase();
     const jsFileName = `${name.charAt(0).toUpperCase()}${name.substring(1)}`;
     try {
+        const isAtomOrMolecule = (argv.atom || argv.molecule);
+        const slyComponentTemplate = fs.readFileSync(`${__dirname}/templates/slyComponentTemplate.txt`, 'utf8').toString();
         const slyTemplate = fs.readFileSync(`${__dirname}/templates/slyTemplate.txt`, 'utf8').toString();
         const jsTemplate = fs.readFileSync(`${__dirname}/templates/jsClassTemplate.txt`, 'utf8').toString();
         const jsTestTemplate = fs.readFileSync(`${__dirname}/templates/jsTestFileTemplate.txt`, 'utf8').toString();
         const uxPreviewTemplate = fs.readFileSync(`${__dirname}/templates/uxPreviewTemplate.txt`, 'utf8').toString();
-        fs.writeFileSync(`${componentPath}/${templateFileName}-template.html`, slyTemplate.replace('#templateFileName#', templateFileName).replace('#className#', jsFileName));
-        if (!(argv.atom || argv.molecule)) {
+        fs.writeFileSync(`${componentPath}/${templateFileName}-template.html`, (isAtomOrMolecule ? slyTemplate : slyComponentTemplate).replace('#templateFileName#', templateFileName).replace('#className#', jsFileName));
+        if (!isAtomOrMolecule) {
             const instanceName = `${name.charAt(0).toLowerCase()}${name.substring(1)}`;
             fs.writeFileSync(`${componentPath}/${jsFileName}.js`, jsTemplate.replace(/#component#/g, jsFileName));
             fs.writeFileSync(`${componentPath}/${jsFileName}.spec.js`, jsTestTemplate.replace(/#component#/g, jsFileName).replace(/#instance#/g, instanceName));
@@ -84,7 +86,7 @@ inquirer.prompt(questions)
                     fs.mkdirsSync(folder);
                 }
                 const componentList = fs.readdirSync(`${process.cwd()}/${folder}`);
-                if (componentList.includes(inputComponentName)) {
+                if (componentList.includes(inputComponentName.toLowerCase())) {
                     console.log(chalk.red(chalk.bold(`${moduleName} with name ${inputComponentName} already exists!`)));
                 } else {
                     createComponent(inputComponentName);

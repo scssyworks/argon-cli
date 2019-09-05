@@ -1,0 +1,35 @@
+{
+  "name": "argon-cli",
+  "version": "0.0.1",
+  "description": "Argon CLI provide tools for creating components and running build scripts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scssyworks/argon-cli.git"
+  },
+  "keywords": [
+    "argon",
+    "cli",
+    "argon-cli",
+    "argon-boilerplate",
+    "boilerplate"
+  ],
+  "author": "Sachin Singh <contactsachinsingh@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scssyworks/argon-cli/issues"
+  },
+  "homepage": "https://github.com/scssyworks/argon-cli#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "fs-extra": "^8.1.0",
+    "inquirer": "^7.0.0",
+    "yargs": "^14.0.0"
+  },
+  "bin": {
+    "argon-create": "./index.js"
+  }
+}

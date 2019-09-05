@@ -1,0 +1,5 @@
+<sly data-sly-template.#templateFileName#_template="${@data, flag}">
+    <div data-module="#className#">
+        <!-- Component HTML code goes here -->
+    </div>
+</sly>

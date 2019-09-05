@@ -23,7 +23,13 @@
     "url": "https://github.com/scssyworks/argon-cli/issues"
   },
   "homepage": "https://github.com/scssyworks/argon-cli#readme",
-  "dependencies": {
+  "devDependencies": {
+    "chalk": "^2.4.2",
+    "fs-extra": "^8.1.0",
+    "inquirer": "^7.0.0",
+    "yargs": "^14.0.0"
+  },
+  "peerDependencies": {
     "chalk": "^2.4.2",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",

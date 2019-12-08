@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const argv = require('yargs').argv;
 const configFile = argv.config || 'argon.config';
 const fs = require('fs-extra');
-const chalk = require('chalk').default;
+const chalk = require('chalk');
 let config = null;
 try {
     config = require(`${process.cwd()}/${configFile}`).createComponent;

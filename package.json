@@ -24,16 +24,16 @@
   },
   "homepage": "https://github.com/scssyworks/argon-cli#readme",
   "devDependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^3.0.0",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",
-    "yargs": "^14.0.0"
+    "yargs": "^15.0.2"
   },
   "peerDependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^3.0.0",
     "fs-extra": "^8.1.0",
     "inquirer": "^7.0.0",
-    "yargs": "^14.0.0"
+    "yargs": "^15.0.2"
   },
   "bin": {
     "argon-create": "./index.js"

@@ -56,7 +56,7 @@ function createComponent(name) {
             fs.writeFileSync(`${componentPath}/${jsFileName}.spec.js`, jsTestTemplate.replace(/#component#/g, jsFileName).replace(/#instance#/g, instanceName));
             fs.writeFileSync(`${componentPath}/ux-model.json`, '{}');
             const previewHtml = uxPreviewTemplate.replace(/#name#/g, templateFileName);
-            fs.writeFileSync(`${componentPath}/ux-preview.hbs`, previewHtml);
+            fs.writeFileSync(`${componentPath}/${templateFileName}.hbs`, previewHtml);
         }
         console.log(chalk.green(chalk.bold(`${targetModule} ${name} has been created!`)));
     } catch (e) {

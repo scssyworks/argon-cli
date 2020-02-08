@@ -88,7 +88,7 @@ function createNewBundle(bundle) {
                 Object.assign(globalConfig.webpack.componentGroups, {
                     [name]: []
                 });
-                resolve();
+                resolve(name);
             }).catch(reject);
         } else {
             resolve();
@@ -97,7 +97,7 @@ function createNewBundle(bundle) {
 }
 
 function createComponent(name, bundle) {
-    createNewBundle(bundle).then(() => {
+    createNewBundle(bundle).then((bundleName) => {
         // Create folder structure
         const currentConfig = argv.atom
             ? 'atomsFolder'
@@ -133,10 +133,10 @@ function createComponent(name, bundle) {
         }
         // Add bundle
         if (
-            bundle
-            && !globalConfig.webpack.componentGroups[bundle].includes(`${compRelativePath}/`)
+            bundleName
+            && !globalConfig.webpack.componentGroups[bundleName].includes(`${compRelativePath}/`)
         ) {
-            globalConfig.webpack.componentGroups[bundle].push(`${compRelativePath}/`);
+            globalConfig.webpack.componentGroups[bundleName].push(`${compRelativePath}/`);
             // Write configuration back
             fs.writeFileSync(globalConfigFilePath, JSON.stringify(globalConfig, null, 2));
         }

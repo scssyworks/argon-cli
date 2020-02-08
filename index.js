@@ -4,11 +4,32 @@ const argv = require('yargs').argv;
 const configFile = argv.config || 'argon.config';
 const fs = require('fs-extra');
 const chalk = require('chalk');
+const path = require('path');
 let config = null;
 try {
     config = require(`${process.cwd()}/${configFile}`).createComponent;
 } catch (e) {
     console.log(chalk.red(chalk.bold('An error occurred while loading configuration')));
+    return;
+}
+
+const layouts = config.layouts || `${process.cwd}/source/templates/layouts`;
+if (typeof layouts !== 'string') {
+    console.log(chalk.red(chalk.bold(`Missing configuration "layouts". Please update your config file's "createComponent" configuration to include "layouts" path.`)));
+    return;
+}
+
+let layoutFileName = '';
+try {
+    if (fs.lstatSync(layouts).isDirectory()) {
+        // Get list of layouts
+        const layoutFiles = fs.readdirSync(layouts).sort();
+        layoutFileName = layoutFiles[0];
+    } else {
+        layoutFileName = path.basename(layouts);
+    }
+} catch (e) {
+    console.log(chalk.red(chalk.bold(`The layouts are undefined OR "layouts" path specified seems to be incorrect.`)));
     return;
 }
 
@@ -55,7 +76,7 @@ function createComponent(name) {
             fs.writeFileSync(`${componentPath}/${jsFileName}.js`, jsTemplate.replace(/#component#/g, jsFileName));
             fs.writeFileSync(`${componentPath}/${jsFileName}.spec.js`, jsTestTemplate.replace(/#component#/g, jsFileName).replace(/#instance#/g, instanceName));
             fs.writeFileSync(`${componentPath}/ux-model.json`, '{}');
-            const previewHtml = uxPreviewTemplate.replace(/#name#/g, templateFileName);
+            const previewHtml = uxPreviewTemplate.replace(/#name#/g, templateFileName).replace(/#layoutFileName#/, layoutFileName);
             fs.writeFileSync(`${componentPath}/${templateFileName}.hbs`, previewHtml);
         }
         console.log(chalk.green(chalk.bold(`${targetModule} ${name} has been created!`)));

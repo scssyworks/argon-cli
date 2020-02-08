@@ -55,7 +55,10 @@ const questions = [
 ];
 
 // Resolve webpack configuration
-if (globalConfig.webpack) {
+if (
+    globalConfig.webpack
+    && targetModule === 'component'
+) {
     const webpackConfig = globalConfig.webpack;
     if (webpackConfig.cacheGroups) {
         const bundles = Object.keys(webpackConfig.cacheGroups).filter(bundle => webpackConfig.cacheGroups[bundle].testMultiple);

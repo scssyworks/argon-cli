@@ -1,6 +1,6 @@
 {
   "name": "argon-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Argon CLI provide tools for creating components and running build scripts",
   "main": "index.js",
   "scripts": {

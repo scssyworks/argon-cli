@@ -13,7 +13,7 @@ try {
     return;
 }
 
-const layouts = config.layouts || `${process.cwd}/source/templates/layouts`;
+const layouts = config.layouts || `${process.cwd()}/source/templates/layouts`;
 if (typeof layouts !== 'string') {
     console.log(chalk.red(chalk.bold(`Missing configuration "layouts". Please update your config file's "createComponent" configuration to include "layouts" path.`)));
     return;

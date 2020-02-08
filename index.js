@@ -6,8 +6,11 @@ const fs = require('fs-extra');
 const chalk = require('chalk');
 const path = require('path');
 let config = null;
+let globalConfig = null;
+const globalConfigFilePath = `${process.cwd()}/${configFile}`;
 try {
-    config = require(`${process.cwd()}/${configFile}`).createComponent;
+    globalConfig = require(globalConfigFilePath);
+    config = globalConfig.createComponent;
 } catch (e) {
     console.log(chalk.red(chalk.bold('An error occurred while loading configuration')));
     return;
@@ -19,6 +22,7 @@ if (typeof layouts !== 'string') {
     return;
 }
 
+// Resolve Layout File name
 let layoutFileName = '';
 try {
     if (fs.lstatSync(layouts).isDirectory()) {
@@ -50,39 +54,95 @@ const questions = [
     }
 ];
 
-function createComponent(name) {
-    // Create folder structure
-    const currentConfig = argv.atom
-        ? 'atomsFolder'
-        : argv.molecule
-            ? 'moleculesFolder'
-            : 'componentsFolder';
-    const componentPath = `${process.cwd()}/${config[currentConfig]}/${name.toLowerCase()}`;
-    fs.mkdirsSync(componentPath);
-    // Create files
-    fs.writeFileSync(`${componentPath}/_${name}.scss`, '');
-    const templateFileName = name.toLowerCase();
-    const jsFileName = `${name.charAt(0).toUpperCase()}${name.substring(1)}`;
-    try {
-        const isAtomOrMolecule = (argv.atom || argv.molecule);
-        const slyComponentTemplate = fs.readFileSync(`${__dirname}/templates/slyComponentTemplate.txt`, 'utf8').toString();
-        const slyTemplate = fs.readFileSync(`${__dirname}/templates/slyTemplate.txt`, 'utf8').toString();
-        const jsTemplate = fs.readFileSync(`${__dirname}/templates/jsClassTemplate.txt`, 'utf8').toString();
-        const jsTestTemplate = fs.readFileSync(`${__dirname}/templates/jsTestFileTemplate.txt`, 'utf8').toString();
-        const uxPreviewTemplate = fs.readFileSync(`${__dirname}/templates/uxPreviewTemplate.txt`, 'utf8').toString();
-        fs.writeFileSync(`${componentPath}/${templateFileName}-template.html`, (isAtomOrMolecule ? slyTemplate : slyComponentTemplate).replace('#templateFileName#', templateFileName).replace('#className#', jsFileName));
-        if (!isAtomOrMolecule) {
-            const instanceName = `${name.charAt(0).toLowerCase()}${name.substring(1)}`;
-            fs.writeFileSync(`${componentPath}/${jsFileName}.js`, jsTemplate.replace(/#component#/g, jsFileName));
-            fs.writeFileSync(`${componentPath}/${jsFileName}.spec.js`, jsTestTemplate.replace(/#component#/g, jsFileName).replace(/#instance#/g, instanceName));
-            fs.writeFileSync(`${componentPath}/ux-model.json`, '{}');
-            const previewHtml = uxPreviewTemplate.replace(/#name#/g, templateFileName).replace(/#layoutFileName#/, layoutFileName);
-            fs.writeFileSync(`${componentPath}/${templateFileName}.hbs`, previewHtml);
-        }
-        console.log(chalk.green(chalk.bold(`${targetModule} ${name} has been created!`)));
-    } catch (e) {
-        console.log(chalk.red(chalk.bold('Unable to read template file(s)!')));
+// Resolve webpack configuration
+if (globalConfig.webpack) {
+    const webpackConfig = globalConfig.webpack;
+    if (webpackConfig.cacheGroups) {
+        const bundles = Object.keys(webpackConfig.cacheGroups).filter(bundle => webpackConfig.cacheGroups[bundle].testMultiple);
+        questions.push({
+            type: 'list',
+            message: `Select a bundle where you wish to place your JavaScript file\nOR\nSelect "new" to create new bundle`,
+            choices: ['new', ...bundles],
+            default: 'new',
+            name: 'bundle'
+        });
     }
+}
+
+function createNewBundle(bundle) {
+    return new Promise((resolve, reject) => {
+        if (bundle === 'new') {
+            inquirer.prompt([{
+                message: 'Enter a bundle name',
+                name: 'bundleName',
+                type: 'text'
+            }]).then(({ bundleName: name }) => {
+                Object.assign(globalConfig.webpack.cacheGroups, {
+                    [name]: {
+                        testMultiple: true,
+                        name,
+                        enforce: true,
+                        chunks: 'all'
+                    }
+                });
+                Object.assign(globalConfig.webpack.componentGroups, {
+                    [name]: []
+                });
+                resolve();
+            }).catch(reject);
+        } else {
+            resolve();
+        }
+    });
+}
+
+function createComponent(name, bundle) {
+    createNewBundle(bundle).then(() => {
+        // Create folder structure
+        const currentConfig = argv.atom
+            ? 'atomsFolder'
+            : argv.molecule
+                ? 'moleculesFolder'
+                : 'componentsFolder';
+        const compRelativePath = `${config[currentConfig]}/${name.toLowerCase()}`;
+        const componentPath = `${process.cwd()}/${compRelativePath}`;
+        fs.mkdirsSync(componentPath);
+        // Create files
+        fs.writeFileSync(`${componentPath}/_${name}.scss`, '');
+        const templateFileName = name.toLowerCase();
+        const jsFileName = `${name.charAt(0).toUpperCase()}${name.substring(1)}`;
+        try {
+            const isAtomOrMolecule = (argv.atom || argv.molecule);
+            const slyComponentTemplate = fs.readFileSync(`${__dirname}/templates/slyComponentTemplate.txt`, 'utf8').toString();
+            const slyTemplate = fs.readFileSync(`${__dirname}/templates/slyTemplate.txt`, 'utf8').toString();
+            const jsTemplate = fs.readFileSync(`${__dirname}/templates/jsClassTemplate.txt`, 'utf8').toString();
+            const jsTestTemplate = fs.readFileSync(`${__dirname}/templates/jsTestFileTemplate.txt`, 'utf8').toString();
+            const uxPreviewTemplate = fs.readFileSync(`${__dirname}/templates/uxPreviewTemplate.txt`, 'utf8').toString();
+            fs.writeFileSync(`${componentPath}/${templateFileName}-template.html`, (isAtomOrMolecule ? slyTemplate : slyComponentTemplate).replace('#templateFileName#', templateFileName).replace('#className#', jsFileName));
+            if (!isAtomOrMolecule) {
+                const instanceName = `${name.charAt(0).toLowerCase()}${name.substring(1)}`;
+                fs.writeFileSync(`${componentPath}/${jsFileName}.js`, jsTemplate.replace(/#component#/g, jsFileName));
+                fs.writeFileSync(`${componentPath}/${jsFileName}.spec.js`, jsTestTemplate.replace(/#component#/g, jsFileName).replace(/#instance#/g, instanceName));
+                fs.writeFileSync(`${componentPath}/ux-model.json`, '{}');
+                const previewHtml = uxPreviewTemplate.replace(/#name#/g, templateFileName).replace(/#layoutFileName#/, layoutFileName);
+                fs.writeFileSync(`${componentPath}/${templateFileName}.hbs`, previewHtml);
+            }
+            console.log(chalk.green(chalk.bold(`${targetModule} ${name} has been created!`)));
+        } catch (e) {
+            console.log(chalk.red(chalk.bold('Unable to read template file(s)!')));
+        }
+        // Add bundle
+        if (
+            bundle
+            && !globalConfig.webpack.componentGroups[bundle].includes(`${compRelativePath}/`)
+        ) {
+            globalConfig.webpack.componentGroups[bundle].push(`${compRelativePath}/`);
+            // Write configuration back
+            fs.writeFileSync(globalConfigFilePath, JSON.stringify(globalConfig, null, 2));
+        }
+    }).catch(() => {
+        console.log(chalk.red(chalk.bold('Something went wrong while resolving the bundle!')));
+    });
 }
 
 inquirer.prompt(questions)
@@ -110,7 +170,7 @@ inquirer.prompt(questions)
                 if (componentList.includes(inputComponentName.toLowerCase())) {
                     console.log(chalk.red(chalk.bold(`${moduleName} with name ${inputComponentName} already exists!`)));
                 } else {
-                    createComponent(inputComponentName);
+                    createComponent(inputComponentName, data.bundle);
                 }
             } catch (e) {
                 console.log(chalk.red(chalk.bold('Something went wrong!')));

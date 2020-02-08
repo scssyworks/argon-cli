@@ -62,7 +62,7 @@ if (globalConfig.webpack) {
         questions.push({
             type: 'list',
             message: `Select a bundle where you wish to place your JavaScript file\nOR\nSelect "new" to create new bundle`,
-            choices: ['new', ...bundles],
+            choices: ['[new]', ...bundles],
             default: 'new',
             name: 'bundle'
         });
@@ -71,7 +71,7 @@ if (globalConfig.webpack) {
 
 function createNewBundle(bundle) {
     return new Promise((resolve, reject) => {
-        if (bundle === 'new') {
+        if (bundle === '[new]') {
             inquirer.prompt([{
                 message: 'Enter a bundle name',
                 name: 'bundleName',
@@ -91,7 +91,7 @@ function createNewBundle(bundle) {
                 resolve(name);
             }).catch(reject);
         } else {
-            resolve();
+            resolve(bundle);
         }
     });
 }

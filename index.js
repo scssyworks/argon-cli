@@ -170,7 +170,11 @@ inquirer.prompt(questions)
                 if (componentList.includes(inputComponentName.toLowerCase())) {
                     console.log(chalk.red(chalk.bold(`${moduleName} with name ${inputComponentName} already exists!`)));
                 } else {
-                    createComponent(inputComponentName, data.bundle);
+                    const params = [inputComponentName];
+                    if (moduleName === 'Component') {
+                        params.push(data.bundle);
+                    }
+                    createComponent(...params);
                 }
             } catch (e) {
                 console.log(chalk.red(chalk.bold('Something went wrong!')));

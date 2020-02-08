@@ -63,7 +63,7 @@ if (globalConfig.webpack) {
             type: 'list',
             message: `Select a bundle where you wish to place your JavaScript file\nOR\nSelect "new" to create new bundle`,
             choices: ['[new]', ...bundles],
-            default: 'new',
+            default: '[new]',
             name: 'bundle'
         });
     }

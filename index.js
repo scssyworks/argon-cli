@@ -80,17 +80,21 @@ function createNewBundle(bundle) {
                 name: 'bundleName',
                 type: 'text'
             }]).then(({ bundleName: name }) => {
-                Object.assign(globalConfig.webpack.cacheGroups, {
-                    [name]: {
-                        testMultiple: true,
-                        name,
-                        enforce: true,
-                        chunks: 'all'
-                    }
-                });
-                Object.assign(globalConfig.webpack.componentGroups, {
-                    [name]: []
-                });
+                if (!globalConfig.webpack.cacheGroups[name]) {
+                    Object.assign(globalConfig.webpack.cacheGroups, {
+                        [name]: {
+                            testMultiple: true,
+                            name,
+                            enforce: true,
+                            chunks: 'all'
+                        }
+                    });
+                    Object.assign(globalConfig.webpack.componentGroups, {
+                        [name]: []
+                    });
+                } else {
+                    console.log(chalk.blue('Bundle already exists!'));
+                }
                 resolve(name);
             }).catch(reject);
         } else {

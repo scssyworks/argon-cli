@@ -7,6 +7,7 @@ const chalk = require('chalk');
 const path = require('path');
 let config = null;
 let globalConfig = null;
+const NAME_VALIDATION_REGEX = /^\d|[^A-Za-z0-9_]/;
 const globalConfigFilePath = `${process.cwd()}/${configFile}`;
 try {
     globalConfig = require(globalConfigFilePath);
@@ -80,7 +81,14 @@ function createNewBundle(bundle) {
                 name: 'bundleName',
                 type: 'text'
             }]).then(({ bundleName: name }) => {
-                if (!globalConfig.webpack.cacheGroups[name]) {
+                if (typeof name !== 'string') {
+                    name = '';
+                }
+                name = name.trim();
+                if (
+                    name
+                    && !NAME_VALIDATION_REGEX.test(name)
+                    && !globalConfig.webpack.cacheGroups[name]) {
                     Object.assign(globalConfig.webpack.cacheGroups, {
                         [name]: {
                             testMultiple: true,
@@ -93,7 +101,7 @@ function createNewBundle(bundle) {
                         [name]: []
                     });
                 } else {
-                    console.log(chalk.blue('Bundle already exists!'));
+                    console.log(chalk.blue('Invalid name or bundle already exists!'));
                 }
                 resolve(name);
             }).catch(reject);
@@ -156,7 +164,7 @@ inquirer.prompt(questions)
     .then((data) => {
         if (
             data.cName
-            && !(/^\d|[^A-Za-z0-9_]/).test(data.cName)
+            && !NAME_VALIDATION_REGEX.test(data.cName)
         ) {
             const inputComponentName = `${data.cName.charAt(0).toLowerCase()}${data.cName.substring(1)}`;
             // Check if component already exists
